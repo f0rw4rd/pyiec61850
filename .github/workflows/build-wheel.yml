@@ -1,0 +1,80 @@
+name: Build and Release pyiec61850 Wheel
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'libiec61850 version (e.g., v1.6)'
+        required: true
+        default: 'v1.6'
+
+jobs:
+  build-wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get version from tag or input
+        id: get_version
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${{ github.event.inputs.version }}
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building for libiec61850 version: ${VERSION}"
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: pyiec61850-builder:latest
+          build-args: |
+            LIBIEC61850_VERSION=${{ steps.get_version.outputs.version }}
+
+      - name: Extract wheel from Docker image
+        run: |
+          mkdir -p ./dist
+          docker create --name wheel-container pyiec61850-builder:latest
+          docker cp wheel-container:/wheels/. ./dist/
+          docker rm wheel-container
+
+      - name: Display built wheel files
+        run: |
+          ls -la ./dist/
+          
+      - name: Upload wheel as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: pyiec61850-wheel
+          path: ./dist/*.whl
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./dist/*.whl
+          body: |
+            Python wheel for libiec61850 ${{ steps.get_version.outputs.version }}
+            
+            ## Installation
+            ```
+            pip install pyiec61850 --find-links https://github.com/f0rw4rd/pyiec61850/releases/download/${{ steps.get_version.outputs.version }}/
+            ```
+            
+            Or install directly from GitHub:
+            ```
+            pip install git+https://github.com/USERNAME/REPO.git
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
