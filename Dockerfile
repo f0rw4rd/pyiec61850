@@ -54,7 +54,7 @@ RUN PACKAGE_VERSION=$(echo $LIBIEC61850_VERSION | sed 's/^v//').0 && \
     echo '    include_package_data=True,' >> setup.py && \
     echo "    description=\"Python bindings for libiec61850 $LIBIEC61850_VERSION\"," >> setup.py && \
     echo '    author="Your Name",' >> setup.py && \    
-    echo '    url="https://github.com/yourusername/pyiec61850",' >> setup.py && \
+    echo '    url="https://github.com/f0rw4rd/pyiec61850",' >> setup.py && \
     echo '    python_requires=">=3.6",' >> setup.py && \
     echo ')' >> setup.py
 

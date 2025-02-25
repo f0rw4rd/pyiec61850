@@ -74,7 +74,7 @@ jobs:
             
             Or install directly from GitHub:
             ```
-            pip install git+https://github.com/USERNAME/REPO.git
+            pip install git+https://github.com/f0rw4rd/REPO.git
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
