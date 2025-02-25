@@ -2,7 +2,7 @@
 
 Python bindings for libiec61850, packaged as a Python wheel.
 
-[![Build and Release pyiec61850 Wheel](https://github.com/f0rw4rd/pyiec61850/actions/workflows/build-wheel.yml/badge.svg)](https://github.com/f0rw4rd/REPO/actions/workflows/build-wheel.yml)
+[![Build and Release pyiec61850 Wheel](https://github.com/f0rw4rd/pyiec61850/actions/workflows/build-wheel.yml/badge.svg)](https://github.com/f0rw4rd/pyiec61850/actions/workflows/build-wheel.yml)
 
 This repository provides Python bindings for the [libiec61850](https://github.com/mz-automation/libiec61850) library, which is an open-source implementation of the IEC 61850 standard for communication networks and systems in substations.
 
@@ -11,13 +11,13 @@ This repository provides Python bindings for the [libiec61850](https://github.co
 ### Install from GitHub Release
 
 ```bash
-pip install pyiec61850 --find-links https://github.com/f0rw4rd/REPO/releases/latest/download/
+pip install pyiec61850 --find-links https://github.com/f0rw4rd/pyiec61850/releases/latest/download/
 ```
 
 ### Install directly from GitHub
 
 ```bash
-pip install git+https://github.com/f0rw4rd/REPO.git
+pip install git+https://github.com/f0rw4rd/pyiec61850.git
 ```
 
 ### Install from local wheel
