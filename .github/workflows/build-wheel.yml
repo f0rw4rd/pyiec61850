@@ -11,6 +11,11 @@ on:
         required: true
         default: 'v1.6'
 
+# Add permissions needed for releases
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-wheel:
     runs-on: ubuntu-latest
