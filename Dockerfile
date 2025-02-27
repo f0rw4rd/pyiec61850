@@ -28,6 +28,18 @@ RUN cd libiec61850/third_party/mbedtls && \
     wget https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.6.0.tar.gz --no-check-certificate && \
     tar -xzf v3.6.0.tar.gz
 
+# Copy patch files
+COPY patches/ /build/patches/
+
+# Apply patches
+RUN cd /build/libiec61850 && \
+    if [ -f /build/patches/iec61850.i.patch ]; then \
+        # Find the actual path to the iec61850.i file
+        IEC_FILE=$(find . -name "iec61850.i") && \
+        echo "Applying patch to $IEC_FILE" && \
+        patch -p1 $IEC_FILE < /build/patches/iec61850.i.patch; \
+    fi
+
 # Build libiec61850 with Python bindings
 WORKDIR /build/libiec61850
 RUN mkdir -p build && \
