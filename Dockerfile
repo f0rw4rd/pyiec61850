@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-setuptools \
     python3-wheel \
     python3-pip \
+    wget tar \
     && rm -rf /var/lib/apt/lists/*
 
 # Create working directory
@@ -22,13 +23,21 @@ WORKDIR /build
 RUN echo "Building libiec61850 version: $LIBIEC61850_VERSION" && \
     git clone --depth 1 --branch $LIBIEC61850_VERSION https://github.com/mz-automation/libiec61850.git
 
+# Download mbedTLS directly
+RUN cd libiec61850/third_party/mbedtls && \
+    wget https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.6.0.tar.gz --no-check-certificate && \
+    tar -xzf v3.6.0.tar.gz
+
 # Build libiec61850 with Python bindings
 WORKDIR /build/libiec61850
 RUN mkdir -p build && \
     cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_PYTHON_BINDINGS=ON .. && \
-    make -j$(nproc) && \
-    make install
+    cmake -DCMAKE_INSTALL_PREFIX=/usr \
+          -DBUILD_PYTHON_BINDINGS=ON \
+          .. && \
+    make WITH_MBEDTLS3=1 -j$(nproc) && \
+    make install && \
+    make test
 
 # Show where the library files are located
 RUN find /usr -name "libiec61850.so*" | sort && \
