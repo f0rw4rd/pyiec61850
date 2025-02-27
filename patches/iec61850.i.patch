@@ -1,6 +1,6 @@
 --- a/iec61850.i
 +++ b/iec61850.i
-@@ -21,6 +21,15 @@
+@@ -21,6 +21,15 @@ ModelNode* toModelNode(DataObject * DO)
  {
      return (ModelNode*) DO;
  }
@@ -8,7 +8,7 @@
 +{
 +    return (FileDirectoryEntry) data;
 +}
-+MmsError* createMmsError()
++MmsError* createMmsError() // does not work :/
 +{
 +    MmsError error = MMS_ERROR_NONE;
 +    return &error;
@@ -16,7 +16,7 @@
  char* toCharP(void * v)
  {
      return (char *) v;
-@@ -54,6 +58,7 @@
+@@ -54,6 +63,8 @@ char* toCharP(void *);
  
  ModelNode* toModelNode(LogicalNode *);
  ModelNode* toModelNode(DataObject *);
