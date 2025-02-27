@@ -23,12 +23,22 @@ RUN echo "Building libiec61850 version: $LIBIEC61850_VERSION" && \
     git clone --depth 1 --branch $LIBIEC61850_VERSION https://github.com/mz-automation/libiec61850.git
 
 # Build libiec61850 with Python bindings
-RUN cd libiec61850 && \
-    mkdir -p build && \
+WORKDIR /build/libiec61850
+RUN mkdir -p build && \
     cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_PYTHON_BINDINGS=ON .. && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_PYTHON_BINDINGS=ON .. && \
     make -j$(nproc) && \
     make install
+
+# Show where the library files are located
+RUN find /usr -name "libiec61850.so*" | sort && \
+    find /build -name "libiec61850.so*" | sort && \
+    ldconfig && \
+    ls -la /build/libiec61850/build/src/
+
+# Show where the Python bindings are located
+RUN find /usr -name "pyiec61850" -type d | sort && \
+    find /build -name "pyiec61850" -type d | sort
 
 # Extract version number without 'v' prefix for Python package
 RUN PACKAGE_VERSION=$(echo $LIBIEC61850_VERSION | sed 's/^v//').0 && \
@@ -58,24 +68,36 @@ RUN PACKAGE_VERSION=$(echo $LIBIEC61850_VERSION | sed 's/^v//').0 && \
     echo '    python_requires=">=3.6",' >> setup.py && \
     echo ')' >> setup.py
 
-# Copy the built pyiec61850 module
-RUN cp -r /usr/lib/python3/dist-packages/pyiec61850/* pyiec61850/ || \
-    cp -r /usr/lib/python3.*/site-packages/pyiec61850/* pyiec61850/ || \
-    cp -r /build/libiec61850/build/pyiec61850/* pyiec61850/
+# Copy Python modules from the build directory
+RUN cp -r /build/libiec61850/build/pyiec61850/* pyiec61850/ && \
+    ls -la pyiec61850/
 
-# Copy the shared library into the package directory
-RUN cp /usr/lib/libiec61850.so* pyiec61850/
+# Copy the shared libraries from the build directory
+RUN cp /build/libiec61850/build/src/libiec61850.so* pyiec61850/ && \
+    ls -la pyiec61850/
 
 # Create package initialization file with library loader
 RUN echo "\"\"\"Python bindings for libiec61850 $LIBIEC61850_VERSION\"\"\"" > pyiec61850/__init__.py && \
     echo "import os" >> pyiec61850/__init__.py && \
     echo "import sys" >> pyiec61850/__init__.py && \
-    echo "# Add the package directory to LD_LIBRARY_PATH through ctypes.util search path" >> pyiec61850/__init__.py && \
+    echo "import ctypes" >> pyiec61850/__init__.py && \
+    echo "" >> pyiec61850/__init__.py && \
+    echo "# Get the directory where this package is installed" >> pyiec61850/__init__.py && \
     echo "_package_dir = os.path.dirname(os.path.abspath(__file__))" >> pyiec61850/__init__.py && \
-    echo "os.environ['LD_LIBRARY_PATH'] = _package_dir + os.pathsep + os.environ.get('LD_LIBRARY_PATH', '')" >> pyiec61850/__init__.py && \
-    echo "# Also update sys.path to ensure our shared library can be found" >> pyiec61850/__init__.py && \
-    echo "if _package_dir not in sys.path:" >> pyiec61850/__init__.py && \
-    echo "    sys.path.append(_package_dir)" >> pyiec61850/__init__.py
+    echo "" >> pyiec61850/__init__.py && \
+    echo "# Pre-load the shared library from our package directory" >> pyiec61850/__init__.py && \
+    echo "for lib_file in os.listdir(_package_dir):" >> pyiec61850/__init__.py && \
+    echo "    if lib_file.startswith('libiec61850.so'):" >> pyiec61850/__init__.py && \
+    echo "        try:" >> pyiec61850/__init__.py && \
+    echo "            lib_path = os.path.join(_package_dir, lib_file)" >> pyiec61850/__init__.py && \
+    echo "            ctypes.CDLL(lib_path)" >> pyiec61850/__init__.py && \
+    echo "            break" >> pyiec61850/__init__.py && \
+    echo "        except Exception as e:" >> pyiec61850/__init__.py && \
+    echo "            print(f'Warning: Failed to load {lib_file}: {e}')" >> pyiec61850/__init__.py && \
+    echo "" >> pyiec61850/__init__.py && \
+    echo "# Also add the package directory to the PATH and LD_LIBRARY_PATH for good measure" >> pyiec61850/__init__.py && \
+    echo "os.environ['PATH'] = _package_dir + os.pathsep + os.environ.get('PATH', '')" >> pyiec61850/__init__.py && \
+    echo "os.environ['LD_LIBRARY_PATH'] = _package_dir + os.pathsep + os.environ.get('LD_LIBRARY_PATH', '')" >> pyiec61850/__init__.py
 
 # Create wheel package
 RUN python3 setup.py bdist_wheel
@@ -93,8 +115,8 @@ COPY --from=builder /build/pyiec61850-package/dist/*.whl /wheels/
 
 # Create a simple installation test script
 RUN echo '#!/bin/bash' > /wheels/test_install.sh && \
-    echo 'pip install pyiec61850*.whl && \\' >> /wheels/test_install.sh && \
-    echo "python -c \"import pyiec61850; print('pyiec61850 $LIBIEC61850_VERSION successfully installed')\"" >> /wheels/test_install.sh && \
+    echo 'pip install --force-reinstall pyiec61850*.whl && \\' >> /wheels/test_install.sh && \
+    echo "python -c \"import pyiec61850; print('pyiec61850 $LIBIEC61850_VERSION successfully installed and imported!')\"" >> /wheels/test_install.sh && \
     chmod +x /wheels/test_install.sh
 
 # Create README
