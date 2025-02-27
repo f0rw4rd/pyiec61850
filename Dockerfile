@@ -62,6 +62,11 @@ RUN mkdir -p pyiec61850
 # Create setup.py file with version extracted from build arg
 RUN PACKAGE_VERSION=$(echo $LIBIEC61850_VERSION | sed 's/^v//').0 && \
     echo 'from setuptools import setup, find_packages' > setup.py && \
+    echo 'from setuptools.dist import Distribution' >> setup.py && \
+    echo '' >> setup.py && \
+    echo 'class BinaryDistribution(Distribution):' >> setup.py && \
+    echo '    def has_ext_modules(self):' >> setup.py && \
+    echo '        return True' >> setup.py && \
     echo '' >> setup.py && \
     echo 'setup(' >> setup.py && \
     echo '    name="pyiec61850",' >> setup.py && \
@@ -75,6 +80,7 @@ RUN PACKAGE_VERSION=$(echo $LIBIEC61850_VERSION | sed 's/^v//').0 && \
     echo '    author="Your Name",' >> setup.py && \    
     echo '    url="https://github.com/f0rw4rd/pyiec61850",' >> setup.py && \
     echo '    python_requires=">=3.6",' >> setup.py && \
+    echo '    distclass=BinaryDistribution,' >> setup.py && \
     echo ')' >> setup.py
 
 # Copy Python modules from the build directory
@@ -108,8 +114,9 @@ RUN echo "\"\"\"Python bindings for libiec61850 $LIBIEC61850_VERSION\"\"\"" > py
     echo "os.environ['PATH'] = _package_dir + os.pathsep + os.environ.get('PATH', '')" >> pyiec61850/__init__.py && \
     echo "os.environ['LD_LIBRARY_PATH'] = _package_dir + os.pathsep + os.environ.get('LD_LIBRARY_PATH', '')" >> pyiec61850/__init__.py
 
-# Create wheel package
-RUN python3 setup.py bdist_wheel
+# Create wheel package - use pip wheel instead of setup.py bdist_wheel to ensure platform tags
+RUN pip install wheel && \
+    pip wheel . --no-deps --wheel-dir=dist/
 
 # Create final stage to collect the wheel package
 FROM python:3.11-slim-bullseye
