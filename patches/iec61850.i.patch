@@ -1,6 +1,6 @@
---- test.i	2025-02-28 16:09:21.576203523 +0100
-+++ test.i.patch	2025-02-28 16:09:55.428204212 +0100
-@@ -22,6 +22,21 @@
+--- test.i.patch	2025-02-28 21:08:47.111022156 +0100
++++ test.i	2025-02-28 21:10:52.543024708 +0100
+@@ -22,6 +22,31 @@
  {
      return (char *) v;
  }
@@ -15,14 +15,24 @@
 +        *error = MMS_ERROR_NONE;
 +    return error;
 +}
++
++int MmsError_getValue(MmsError* self)
++{
++    if (self == NULL)
++        return -1; // Return some error indicator if pointer is NULL
++    
++    return (int)*self;
++}
++
 +void destroyMmsError(MmsError* error) {
 +    free(error);
 +}
 +
++
  DataAttribute* toDataAttribute(DataObject * DO)
  { return (DataAttribute*)DO;}
  DataAttribute* toDataAttribute(ModelNode * MN)
-@@ -55,6 +70,9 @@
+@@ -55,6 +80,9 @@
  
  ModelNode* toModelNode(LogicalNode *);
  ModelNode* toModelNode(DataObject *);
