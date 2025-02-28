@@ -39,7 +39,7 @@
 +FileDirectoryEntry toFileDirectoryEntry(void*);
 +MmsError* MmsError_create();
 +void MmsErrror_destroy(MmsError* error);
-+int MmsError_getValue(MmsError* self)
++int MmsError_getValue(MmsError* self);
  DataAttribute* toDataAttribute(DataObject *);
  DataAttribute* toDataAttribute(ModelNode *);
  DataObject* toDataObject(ModelNode *);
