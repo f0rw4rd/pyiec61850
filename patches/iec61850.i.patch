@@ -1,27 +1,34 @@
---- a/iec61850.i
-+++ b/iec61850.i
-@@ -21,6 +21,15 @@ ModelNode* toModelNode(DataObject * DO)
+--- test.i	2025-02-28 16:09:21.576203523 +0100
++++ test.i.patch	2025-02-28 16:09:55.428204212 +0100
+@@ -22,6 +22,21 @@
  {
-     return (ModelNode*) DO;
+     return (char *) v;
  }
 +FileDirectoryEntry toFileDirectoryEntry(void* data)
 +{
 +    return (FileDirectoryEntry) data;
 +}
-+MmsError* createMmsError() // does not work :/
++MmsError* createMmsError()
 +{
-+    MmsError error = MMS_ERROR_NONE;
-+    return &error;
++    MmsError* error = (MmsError*) malloc(sizeof(MmsError));
++    if (error != NULL)
++        *error = MMS_ERROR_NONE;
++    return error;
 +}
- char* toCharP(void * v)
- {
-     return (char *) v;
-@@ -54,6 +63,8 @@ char* toCharP(void *);
++void destroyMmsError(MmsError* error) {
++    free(error);
++}
++
+ DataAttribute* toDataAttribute(DataObject * DO)
+ { return (DataAttribute*)DO;}
+ DataAttribute* toDataAttribute(ModelNode * MN)
+@@ -55,6 +70,9 @@
  
  ModelNode* toModelNode(LogicalNode *);
  ModelNode* toModelNode(DataObject *);
 +FileDirectoryEntry toFileDirectoryEntry(void*);
 +MmsError* createMmsError();
++void destroyMmsError(MmsError* error);
  DataAttribute* toDataAttribute(DataObject *);
  DataAttribute* toDataAttribute(ModelNode *);
  DataObject* toDataObject(ModelNode *);
