@@ -8,7 +8,7 @@
 +{
 +    return (FileDirectoryEntry) data;
 +}
-+MmsError* createMmsError()
++MmsError* MmsError_create()
 +{
 +    MmsError* error = (MmsError*) malloc(sizeof(MmsError));
 +    if (error != NULL)
@@ -24,7 +24,7 @@
 +    return (int)*self;
 +}
 +
-+void destroyMmsError(MmsError* error) {
++void MmsErrror_destroy(MmsError* error) {
 +    free(error);
 +}
 +
@@ -32,13 +32,14 @@
  DataAttribute* toDataAttribute(DataObject * DO)
  { return (DataAttribute*)DO;}
  DataAttribute* toDataAttribute(ModelNode * MN)
-@@ -55,6 +80,9 @@
+@@ -55,6 +80,10 @@
  
  ModelNode* toModelNode(LogicalNode *);
  ModelNode* toModelNode(DataObject *);
 +FileDirectoryEntry toFileDirectoryEntry(void*);
-+MmsError* createMmsError();
-+void destroyMmsError(MmsError* error);
++MmsError* MmsError_create();
++void MmsErrror_destroy(MmsError* error);
++int MmsError_getValue(MmsError* self)
  DataAttribute* toDataAttribute(DataObject *);
  DataAttribute* toDataAttribute(ModelNode *);
  DataObject* toDataObject(ModelNode *);
