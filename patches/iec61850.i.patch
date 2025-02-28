@@ -24,7 +24,7 @@
 +    return (int)*self;
 +}
 +
-+void MmsErrror_destroy(MmsError* error) {
++void MmsError_destroy(MmsError* error) {
 +    free(error);
 +}
 +
@@ -38,7 +38,7 @@
  ModelNode* toModelNode(DataObject *);
 +FileDirectoryEntry toFileDirectoryEntry(void*);
 +MmsError* MmsError_create();
-+void MmsErrror_destroy(MmsError* error);
++void MmsError_destroy(MmsError* error);
 +int MmsError_getValue(MmsError* self);
  DataAttribute* toDataAttribute(DataObject *);
  DataAttribute* toDataAttribute(ModelNode *);
