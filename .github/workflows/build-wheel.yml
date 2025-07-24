@@ -145,8 +145,9 @@ jobs:
           # Build wheel
           RUN pip install wheel setuptools && python setup.py bdist_wheel
 
-          # Final stage
-          FROM scratch
+          # Final stage - use slim base image instead of scratch to enable docker create/cp
+          FROM python:${{ matrix.python-version }}-slim-bullseye
+          WORKDIR /wheels
           COPY --from=builder /build/pyiec61850-package/dist/*.whl /wheels/
           EOF
 
