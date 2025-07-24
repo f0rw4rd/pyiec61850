@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         
     steps:
       - name: Checkout code
@@ -45,12 +45,8 @@ jobs:
 
       - name: Create Python-specific Dockerfile
         run: |
-          # Use appropriate base image for different Python versions
-          if [[ "${{ matrix.python-version }}" == "3.6" || "${{ matrix.python-version }}" == "3.7" ]]; then
-            BASE_IMAGE="python:${{ matrix.python-version }}-slim-buster"
-          else
-            BASE_IMAGE="python:${{ matrix.python-version }}-slim-bullseye"
-          fi
+          # Use bullseye base image for all supported Python versions
+          BASE_IMAGE="python:${{ matrix.python-version }}-slim-bullseye"
           
           cat > Dockerfile.py${{ matrix.python-version }} << EOF
           FROM $BASE_IMAGE AS builder
@@ -147,7 +143,7 @@ jobs:
               echo "            print(f'Warning: Failed to load {lib_file}: {e}')" >> pyiec61850/__init__.py
 
           # Build wheel
-          RUN pip install wheel && python setup.py bdist_wheel
+          RUN pip install wheel setuptools && python setup.py bdist_wheel
 
           # Final stage
           FROM scratch
@@ -207,7 +203,7 @@ jobs:
             Python wheels for libiec61850 ${{ steps.get_version.outputs.version }}
             
             ## Supported Python Versions
-            - Python 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12, 3.13 (Linux x86_64)
+            - Python 3.8, 3.9, 3.10, 3.11, 3.12, 3.13 (Linux x86_64)
             
             ## Installation
             ```bash

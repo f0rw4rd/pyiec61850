@@ -127,7 +127,7 @@ RUN echo "\"\"\"Python bindings for libiec61850 $LIBIEC61850_VERSION\"\"\"" > py
     echo "os.environ['LD_LIBRARY_PATH'] = _package_dir + os.pathsep + os.environ.get('LD_LIBRARY_PATH', '')" >> pyiec61850/__init__.py
 
 # Create wheel package - use pip wheel instead of setup.py bdist_wheel to ensure platform tags
-RUN pip install wheel && \
+RUN pip install wheel setuptools && \
     pip wheel . --no-deps --wheel-dir=dist/
 
 # Create final stage to collect the wheel package
